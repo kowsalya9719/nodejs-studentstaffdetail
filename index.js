@@ -1,41 +1,56 @@
-const http = require("http");
 const express = require("express");
-const app = express();
 const bodyparser = require("body-parser");
-const port = 4000;
+const app = express();
+const port = 3000;
+
 app.use(bodyparser.json());
-const Roomdetails = [];
-const Customerdetails = [];
-app.post("/Roomdetails", (req, res) => {
-  Roomdetails.push(req.body);
-  res.json({ message: "Roomdetails created" });
+let staffDetail = []
+let studentDetail = []
+app.post("/studentDetail", (req, res) => {
+  studentDetail.push(req.body);
+  res.json({ message: "studentCreation created successfully!" })
 });
-app.post("/Customerdetails", (req, res) => {
-  Customerdetails.push(req.body);
-  res.json({ message: "customerdetails created" });
+app.get("/studentDetail", (req, res) => {
+  res.send(studentDetail)
+})
+app.post("/staffDetail", (req, res) => {
+  staffDetail.push(req.body);
+  res.json({ message: "staffCreation created successfully!" })
 });
-app.get("/bookedRoom", (req, res) => {
-  let room = Customerdetails.map((data) => {
+
+app.get("/getstaffdetail", (req, res) => {
+  let staff = staffDetail.map((data) => {
+    let count = studentDetail.filter((item) => item.staffid === data.id);
     return {
-      CustomerName: data.CustomerName,
-      Date: data.Date,
-      StartTime: data.StartTime,
-      EndTime: data.EndTime,
-      BookStatus: data.BookStatus,
-      RoomId: data.RoomId,
-    };
-  });
-  res.json(room);
-});
-app.get("/bookedCustomers", (req, res) => {
-  let customer = Customerdetails.map((data) => {
-    return {
-      CustomerName: data.CustomerName,
-      RoomId: data.RoomId,
-    };
-  });
-  res.json(customer);
+      id: data.id,
+      name: data.name,
+      email: data.email,
+      studentCount: count.length
+    }
+  })
+  res.json(staff)
+})
+
+app.put("/studentDetail/:id", (req, res) => {
+  console.log(req.params.id);
+  studentDetail.forEach((element) => {
+    if (element.id == req.params.id) {
+      element.name = req.body.name;
+      res.status(200).send({ message: "updated" })
+    }
+  })
+})
+
+app.delete("/remove/:id", (req, res) => {
+  let filterval = studentDetail.filter((element) => {
+    if (element.id == req.params.id) {
+      return element;
+    }
+  })[0];
+
+  studentDetail = filterval;
+  res.send(studentDetail);
 });
 app.listen(process.env.PORT || port, () => {
-  console.log(`the server is listening ${port}`);
+  console.log(`server is listening ${port}`);
 });
